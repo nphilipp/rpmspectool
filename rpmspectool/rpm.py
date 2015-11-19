@@ -135,8 +135,10 @@ class RPMSpecHandler(object):
                 m = self.source_patch_re.search(l)
                 if m:
                     if m.group('sourcepatch').lower() == b'source':
+                        log_debug("Found source: {!r}".format(l))
                         spdict = ret_dict['sources']
                     else:
+                        log_debug("Found patch: {!r}".format(l))
                         spdict = ret_dict['patches']
                     index = int(m.group('index'))
                     if index is None:
