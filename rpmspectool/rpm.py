@@ -140,8 +140,9 @@ class RPMSpecHandler(object):
                     else:
                         log_debug("Found patch: {!r}".format(l))
                         spdict = ret_dict['patches']
-                    index = int(m.group('index'))
-                    if index is None:
+                    try:
+                        index = int(m.group('index'))
+                    except TypeError:
                         index = 0
                     spdict[index] = m.group('fileurl').decode('utf-8')
                 m = self.srcdir_re.search(l)
