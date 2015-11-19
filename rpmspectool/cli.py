@@ -55,9 +55,12 @@ class CLI(object):
         get_cmd = commands.add_parser(
                 "get", parents=[action_parser], help=_("Download files"))
         get_cmd.add_argument("--insecure", action='store')
-        get_cmd.add_argument("--directory", "-C", action='store')
         get_cmd.add_argument("--force", "-f", action='store_true')
         get_cmd.add_argument("--dry-run", "--dryrun", "-n", action='store_true')
+
+        get_src_group = get_cmd.add_mutually_exclusive_group()
+        get_src_group.add_argument("--directory", "-C", action='store')
+        get_src_group.add_argument("--sourcedir", "-R", action='store_true')
 
         list_cmd = commands.add_parser(
                 "list", parents=[action_parser], help=_("List files"))
@@ -104,10 +107,10 @@ class CLI(object):
                             self.args.specfile.name))
                 spechandler = RPMSpecHandler(
                         self.tmpdir, args.specfile, parsed_spec_path)
-                sources, patches = spechandler.eval_sources_patches(
-                        self.args.define)
+                specfile_res = spechandler.eval_specfile(self.args.define)
                 sources, patches = self.filter_sources_patches(
-                        args, sources, patches)
+                        args,
+                        specfile_res['sources'], specfile_res['patches'])
 
                 if args.cmd == 'list':
                     for prefix, what in (
@@ -115,7 +118,10 @@ class CLI(object):
                         for i in sorted(what):
                             print("{}{}: {}".format(prefix, i, what[i]))
                 elif args.cmd == 'get':
-                    where = getattr(args, 'directory')
+                    if getattr(args, 'sourcedir'):
+                        where = specfile_res['srcdir']
+                    else:
+                        where = getattr(args, 'directory')
                     for what in sources, patches:
                         for i in sorted(what):
                             url = what[i]

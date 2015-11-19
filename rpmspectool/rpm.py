@@ -3,6 +3,7 @@
 # rpmspectool.rpm: RPM spec handling for rpmspectool
 # Copyright © 2015 Red Hat, Inc.
 
+from collections import defaultdict
 from logging import debug as log_debug, error as log_error
 import re
 from subprocess import Popen, DEVNULL, PIPE
@@ -23,12 +24,17 @@ class RPMSpecHandler(object):
             rb"^\s*(?P<sourcepatch>Source|Patch)(?P<index>\d+)?\s*:"
             rb"\s*(?P<fileurl>.*\S)\s*$", re.IGNORECASE)
     group_re = re.compile(rb"^\s*Group\s*:", re.IGNORECASE)
+    srcdir_re = re.compile(
+            rb"^\s*srcdir\s*:\s*(?P<srcdir>.*\S)\s*$", re.IGNORECASE)
 
     section_names = set((x.encode('utf-8') for x in (
         'package', 'description', 'prep', 'build', 'install', 'clean', 'pre',
         'preun', 'post', 'postun', 'triggerin', 'triggerun', 'triggerpostun',
         'files', 'changelog', 'pretrans', 'posttrans', 'verifyscript',
         'triggerprein')))
+
+    rpm_cmd_macros = (
+            '_topdir', '_sourcedir', '_builddir', '_srcrpmdir', '_rpmdir')
 
     def __init__(self, tmpdir, in_specfile, out_specfile):
         self.tmpdir = tmpdir
@@ -46,10 +52,23 @@ class RPMSpecHandler(object):
             self.out_specfile_path = out_specfile.name
             self.out_specfile = out_specfile
 
-    def eval_sources_patches(self, definitions=None):
-        log_debug("eval_sources_patches()")
+    def eval_specfile(self, definitions=None):
+        log_debug("eval_specfile()")
 
         log_debug("writing parsed file '{}'".format(self.out_specfile_path))
+
+        cmdline = (self.rpmcmd, "--eval")
+
+        for macro in self.rpm_cmd_macros:
+            self.out_specfile.write(
+                "%undefine {macro}\n%define {macro} ".format(
+                    macro=macro).encode('utf-8'))
+            with Popen(
+                    cmdline + ("%{}\n".format(macro),), stdin=DEVNULL,
+                    stdout=PIPE, stderr=DEVNULL, close_fds=True) as rpmpipe:
+                self.out_specfile.write(rpmpipe.stdout.read())
+        self.out_specfile.write(b"\n")
+
         for definition in definitions:
             self.out_specfile.write(
                 "%define {}\n".format(definition).encode('utf-8'))
@@ -95,20 +114,18 @@ class RPMSpecHandler(object):
 
         self.out_specfile.write(
                 b"%description\n%prep\ncat << " + eof + b"\n" +
-                preamble_bytes + b"\n" + eof)
+                preamble_bytes + b"\nSrcDir: %{_sourcedir}\n" + eof)
 
         self.out_specfile.close()
 
         cmdline = [self.rpmbuildcmd]
 
-        for macro in (
-                '_topdir', '_sourcedir', '_builddir', '_srcrpmdir', '_rpmdir'):
+        for macro in self.rpm_cmd_macros:
             cmdline.extend(("--define", "{} {}".format(macro, self.tmpdir)))
 
         cmdline.extend(("--nodeps", "-bp", self.out_specfile_path))
 
-        sources = {}
-        patches = {}
+        ret_dict = defaultdict(dict)
 
         with Popen(
                 cmdline, stdin=DEVNULL, stdout=PIPE, stderr=DEVNULL,
@@ -118,15 +135,18 @@ class RPMSpecHandler(object):
                 m = self.source_patch_re.search(l)
                 if m:
                     if m.group('sourcepatch').lower() == b'source':
-                        spdict = sources
+                        spdict = ret_dict['sources']
                     else:
-                        spdict = patches
+                        spdict = ret_dict['patches']
                     index = int(m.group('index'))
                     if index is None:
                         index = 0
                     spdict[index] = m.group('fileurl').decode('utf-8')
+                m = self.srcdir_re.search(l)
+                if m:
+                    ret_dict['srcdir'] = m.group('srcdir').decode('utf-8')
 
-            return sources, patches
+        return ret_dict
 
     @property
     def need_conditionals_quirk(self):
