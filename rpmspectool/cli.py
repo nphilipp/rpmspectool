@@ -96,7 +96,7 @@ class CLI(object):
             if not getattr(args, 'cmd'):
                 argparser.print_usage()
             elif args.cmd == 'version':
-                print("{prog} v{version}".format(
+                print("{prog} {version}".format(
                     prog=sys.argv[0], version=version))
             else:
                 parsed_spec_path = os.path.join(
