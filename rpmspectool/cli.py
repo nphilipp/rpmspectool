@@ -113,8 +113,7 @@ class CLI(object):
                     for prefix, what in (
                             ("Source", sources), ("Patch", patches)):
                         for i in sorted(what):
-                            print("{}{}: {}".format(
-                                prefix, i, what[i].decode('utf-8')))
+                            print("{}{}: {}".format(prefix, i, what[i]))
                 elif args.cmd == 'get':
                     where = getattr(args, 'directory')
                     for what in sources, patches:
