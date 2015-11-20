@@ -10,7 +10,7 @@ if sys.version_info.major < 3:
 
 setup(
     name="rpmspectool",
-    version="1.99.2",
+    version="1.99.3",
     author="Nils Philippsen",
     author_email="nils@redhat.com",
     url="https://github.com/nphilipp/rpmspectool",
