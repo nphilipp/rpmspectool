@@ -23,6 +23,9 @@ setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python",
+        "Programming Language :: Python :: 3 :: Only",
+        "Environment :: Console",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "Topic :: Software Development :: Build Tools",
         ],
     )
