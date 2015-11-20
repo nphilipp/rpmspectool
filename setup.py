@@ -13,8 +13,8 @@ setup(
     version="1.99.0",
     author="Nils Philippsen",
     author_email="nils@redhat.com",
-    #url=
-    #download_url=
+    url="https://github.com/nphilipp/rpmspectool",
+    download_url="https://pypi.python.org/pypi/rpmspectool",
     install_requires=["pycurl"],
     packages=find_packages(),
     include_package_data=True,
