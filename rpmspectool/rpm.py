@@ -33,6 +33,9 @@ class RPMSpecHandler(object):
         'files', 'changelog', 'pretrans', 'posttrans', 'verifyscript',
         'triggerprein')))
 
+    conditional_names = set((x.encode('utf-8') for x in (
+        'if', 'ifos', 'ifnos', 'ifarch', 'ifnarch')))
+
     rpm_cmd_macros = (
             '_topdir', '_sourcedir', '_builddir', '_srcrpmdir', '_rpmdir')
 
@@ -78,12 +81,24 @@ class RPMSpecHandler(object):
 
         preamble = []
         group_seen = False
+        conditional_depth = 0
 
         for l in self.in_specfile.readlines():
             m = self.macro_re.search(l)
-            if m and m.group('name') in self.section_names:
-                # we're only interested in the preamble
-                break
+            if m:
+                name = m.group('name')
+                if name in self.section_names:
+                    # unwind open conditional blocks
+                    unwinding_lines = [b"%endif\n"] * conditional_depth
+                    preamble.extend(unwinding_lines)
+                    self.out_specfile.write(b"".join(unwinding_lines))
+
+                    # we're only interested in the preamble
+                    break
+                elif name in self.conditional_names:
+                    conditional_depth += 1
+                elif name == b'endif':
+                    conditional_depth -= 1
 
             # ignore arch specifics
             if self.archstuff_re.search(l):
@@ -94,7 +109,6 @@ class RPMSpecHandler(object):
             l = self.serial_re.sub(rb"Epoch", l)
 
             preamble.append(l)
-
             self.out_specfile.write(l)
 
             if self.group_re.search(l):
