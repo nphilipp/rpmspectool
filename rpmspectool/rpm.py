@@ -9,6 +9,11 @@ import re
 from subprocess import Popen, DEVNULL, PIPE
 
 
+class RPMSpecEvalError(Exception):
+
+    pass
+
+
 class RPMSpecHandler(object):
 
     rpmcmd = "rpm"
@@ -142,9 +147,14 @@ class RPMSpecHandler(object):
         ret_dict = defaultdict(dict)
 
         with Popen(
-                cmdline, stdin=DEVNULL, stdout=PIPE, stderr=DEVNULL,
+                cmdline, stdin=DEVNULL, stdout=PIPE, stderr=PIPE,
                 close_fds=True) as rpm:
-            for l in rpm.stdout.readlines():
+            stdout, stderr = rpm.communicate()
+            if rpm.returncode:
+                raise RPMSpecEvalError(
+                        self.out_specfile_path, rpm.returncode, stderr)
+
+            for l in stdout.split(b"\n"):
                 l = l.strip()
                 m = self.source_patch_re.search(l)
                 if m:

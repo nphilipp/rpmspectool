@@ -13,7 +13,7 @@ import sys
 import tempfile
 
 from .i18n import init as i18n_init, _
-from .rpm import RPMSpecHandler
+from .rpm import RPMSpecHandler, RPMSpecEvalError
 from .download import is_url, download
 from .version import version
 
@@ -106,7 +106,23 @@ class CLI(object):
                         self.args.specfile.name))
             spechandler = RPMSpecHandler(
                     self.tmpdir, args.specfile, parsed_spec_path)
-            specfile_res = spechandler.eval_specfile(self.args.define)
+
+            try:
+                specfile_res = spechandler.eval_specfile(self.args.define)
+            except RPMSpecEvalError as e:
+                specpath, returncode, stderr = e.args
+                if args.debug:
+                    errmsg = _(
+                        "Error parsing intermediate spec file '{specpath}'.")
+                else:
+                    errmsg = _("Error parsing intermediate spec file.")
+                print(errmsg.format(specpath=specpath), file=sys.stderr)
+                if args.verbose:
+                    print(
+                        _("RPM error:\n{stderr}").format(stderr=stderr),
+                        file=sys.stderr)
+                sys.exit(2)
+
             sources, patches = self.filter_sources_patches(
                     args,
                     specfile_res['sources'], specfile_res['patches'])
