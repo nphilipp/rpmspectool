@@ -95,50 +95,46 @@ class CLI(object):
 
         log_debug("args: {}".format(args))
 
-        try:
-            if not getattr(args, 'cmd'):
-                argparser.print_usage()
-            elif args.cmd == 'version':
-                print("{prog} {version}".format(
-                    prog=sys.argv[0], version=version))
-            else:
-                parsed_spec_path = os.path.join(
-                        self.tmpdir, "spectool-" + os.path.basename(
-                            self.args.specfile.name))
-                spechandler = RPMSpecHandler(
-                        self.tmpdir, args.specfile, parsed_spec_path)
-                specfile_res = spechandler.eval_specfile(self.args.define)
-                sources, patches = self.filter_sources_patches(
-                        args,
-                        specfile_res['sources'], specfile_res['patches'])
+        if not getattr(args, 'cmd'):
+            argparser.print_usage()
+        elif args.cmd == 'version':
+            print("{prog} {version}".format(
+                prog=sys.argv[0], version=version))
+        else:
+            parsed_spec_path = os.path.join(
+                    self.tmpdir, "spectool-" + os.path.basename(
+                        self.args.specfile.name))
+            spechandler = RPMSpecHandler(
+                    self.tmpdir, args.specfile, parsed_spec_path)
+            specfile_res = spechandler.eval_specfile(self.args.define)
+            sources, patches = self.filter_sources_patches(
+                    args,
+                    specfile_res['sources'], specfile_res['patches'])
 
-                if args.cmd == 'list':
-                    for prefix, what in (
-                            ("Source", sources), ("Patch", patches)):
-                        for i in sorted(what):
-                            print("{}{}: {}".format(prefix, i, what[i]))
-                elif args.cmd == 'get':
-                    if getattr(args, 'sourcedir'):
-                        where = specfile_res['srcdir']
-                    else:
-                        where = getattr(args, 'directory')
-                    for what in sources, patches:
-                        for i in sorted(what):
-                            url = what[i]
-                            if is_url(url):
-                                download(
-                                        url, where=where,
-                                        dry_run=getattr(args, 'dry_run'),
-                                        insecure=getattr(args, 'insecure'))
-
-        except Exception as e:
-            raise
-            if isinstance(e, SystemExit):
-                raise
-            return 1
+            if args.cmd == 'list':
+                for prefix, what in (
+                        ("Source", sources), ("Patch", patches)):
+                    for i in sorted(what):
+                        print("{}{}: {}".format(prefix, i, what[i]))
+            elif args.cmd == 'get':
+                if getattr(args, 'sourcedir'):
+                    where = specfile_res['srcdir']
+                else:
+                    where = getattr(args, 'directory')
+                for what in sources, patches:
+                    for i in sorted(what):
+                        url = what[i]
+                        if is_url(url):
+                            download(
+                                    url, where=where,
+                                    dry_run=getattr(args, 'dry_run'),
+                                    insecure=getattr(args, 'insecure'))
 
         return 0
 
 def main():
-    i18n_init()
-    return CLI().main()
+    try:
+        i18n_init()
+        return CLI().main()
+    except KeyboardInterrupt:
+        return 1
