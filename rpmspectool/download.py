@@ -23,7 +23,7 @@ protocols_re = re.compile(r"^(?:ftp|https?)://", re.IGNORECASE)
 def is_url(url):
     return bool(protocols_re.search(url))
 
-def download(url, where=None, dry_run=False, insecure=False):
+def download(url, where=None, dry_run=False, insecure=False, force=False):
     if where is None:
         where = os.getcwd()
 
@@ -59,6 +59,11 @@ def download(url, where=None, dry_run=False, insecure=False):
         finally:
             c.close()
 
+        if force:
+            try:
+                os.remove(fpath)
+            except FileNotFoundError:
+                pass
         os.link(fobj.name, fpath)
 
     # set file modification time

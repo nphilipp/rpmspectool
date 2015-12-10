@@ -147,7 +147,7 @@ class CLI(object):
                             try:
                                 download(
                                     url, where=where, dry_run=args.dry_run,
-                                    insecure=args.insecure)
+                                    insecure=args.insecure, force=args.force)
                             except DownloadError as e:
                                 log_error(e.args[0])
                                 return 1
