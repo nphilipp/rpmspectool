@@ -151,6 +151,10 @@ class CLI(object):
                             except DownloadError as e:
                                 log_error(e.args[0])
                                 return 1
+                            except FileExistsError as e:
+                                log_error("{}: {}".format(e.args[1], getattr(
+                                    e, 'filename2', e.filename)))
+                                return 1
 
         return 0
 
