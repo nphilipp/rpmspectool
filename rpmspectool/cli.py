@@ -54,9 +54,12 @@ class CLI(object):
 
         get_cmd = commands.add_parser(
                 "get", parents=[action_parser], help=_("Download files"))
-        get_cmd.add_argument("--insecure", action='store')
-        get_cmd.add_argument("--force", "-f", action='store_true')
-        get_cmd.add_argument("--dry-run", "--dryrun", "-n", action='store_true')
+        get_cmd.add_argument("--insecure", action='store', default=False)
+        get_cmd.add_argument(
+                "--force", "-f", action='store_true', default=False)
+        get_cmd.add_argument(
+                "--dry-run", "--dryrun", "-n", action='store_true',
+                default=False)
 
         get_src_group = get_cmd.add_mutually_exclusive_group()
         get_src_group.add_argument("--directory", "-C", action='store')
@@ -143,9 +146,8 @@ class CLI(object):
                         if is_url(url):
                             try:
                                 download(
-                                        url, where=where,
-                                        dry_run=getattr(args, 'dry_run'),
-                                        insecure=getattr(args, 'insecure'))
+                                    url, where=where, dry_run=args.dry_run,
+                                    insecure=args.insecure)
                             except DownloadError as e:
                                 log_error(e.args[0])
                                 return 1
