@@ -5,11 +5,17 @@
 
 import os
 import re
+from tempfile import NamedTemporaryFile
 import time
 
 import pycurl
 
+from .i18n import _
 from .version import version
+
+
+class DownloadError(RuntimeError):
+    pass
 
 
 protocols_re = re.compile(r"^(?:ftp|https?)://", re.IGNORECASE)
@@ -31,7 +37,7 @@ def download(url, where=None, dry_run=False, insecure=False):
         print("NOT downloading {}' to '{}'".format(url, fpath))
         return
 
-    with open(fpath, "wb") as fobj:
+    with NamedTemporaryFile(dir=where, prefix=fname, mode="wb") as fobj:
         c = pycurl.Curl()
         c.setopt(c.URL, url)
         c.setopt(c.WRITEDATA, fobj)
@@ -46,8 +52,14 @@ def download(url, where=None, dry_run=False, insecure=False):
             print("Downloading '{}' to '{}'".format(url, fpath))
             c.perform()
             ts = c.getinfo(c.INFO_FILETIME)
+            http_status = c.getinfo(pycurl.HTTP_CODE)
+            if not 200 <= http_status < 300:
+                raise DownloadError(_("Couldn't download {}: {}".format(
+                    url, http_status)))
         finally:
             c.close()
+
+        os.link(fobj.name, fpath)
 
     # set file modification time
     if ts != -1:

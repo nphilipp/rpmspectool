@@ -14,7 +14,7 @@ import tempfile
 
 from .i18n import init as i18n_init, _
 from .rpm import RPMSpecHandler, RPMSpecEvalError
-from .download import is_url, download
+from .download import is_url, download, DownloadError
 from .version import version
 
 class CLI(object):
@@ -141,10 +141,14 @@ class CLI(object):
                     for i in sorted(what):
                         url = what[i]
                         if is_url(url):
-                            download(
-                                    url, where=where,
-                                    dry_run=getattr(args, 'dry_run'),
-                                    insecure=getattr(args, 'insecure'))
+                            try:
+                                download(
+                                        url, where=where,
+                                        dry_run=getattr(args, 'dry_run'),
+                                        insecure=getattr(args, 'insecure'))
+                            except DownloadError as e:
+                                log_error(e.args[0])
+                                return 1
 
         return 0
 
