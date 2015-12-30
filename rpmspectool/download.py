@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# rpmspectool.download: download handling for spectool
+# rpmspectool.download: download handling for rpmspectool
 # Copyright © 2015 Red Hat, Inc.
 
 import os
@@ -44,7 +44,7 @@ def download(url, where=None, dry_run=False, insecure=False, force=False):
         c.setopt(c.FOLLOWLOCATION, True)
         # request file modification time
         c.setopt(c.OPT_FILETIME, True)
-        c.setopt(c.USERAGENT, "spectool/{}".format(version))
+        c.setopt(c.USERAGENT, "rpmspectool/{}".format(version))
         if insecure:
             c.setopt(c.SSL_VERIFYPEER, False)
             c.setopt(c.SSL_VERIFYHOST, False)
