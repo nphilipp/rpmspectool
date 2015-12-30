@@ -17,6 +17,7 @@ from .rpm import RPMSpecHandler, RPMSpecEvalError
 from .download import is_url, download, DownloadError
 from .version import version
 
+
 class CLI(object):
 
     def _rm_tmpdir(self):
@@ -35,7 +36,7 @@ class CLI(object):
 
     def get_arg_parser(self, args=None):
         parser = argparse.ArgumentParser(
-                description=_("Utility for RPM spec files"))
+            description=_("Utility for RPM spec files"))
         parser.add_argument("--debug", "-D", action='store_true')
 
         commands = parser.add_subparsers(dest='cmd', help=_("Commands"))
@@ -43,33 +44,33 @@ class CLI(object):
         action_parser = argparse.ArgumentParser(add_help=False)
         action_parser.add_argument("--verbose", "-v", action='store_true')
         action_parser.add_argument(
-                "--define", "-d", action='append', default=[])
+            "--define", "-d", action='append', default=[])
         action_parser.add_argument(
-                "--sources", "--source", "-s", type=int, nargs='*')
+            "--sources", "--source", "-s", type=int, nargs='*')
         action_parser.add_argument(
-                "--patches", "--patch", "-p", type=int, nargs='*')
+            "--patches", "--patch", "-p", type=int, nargs='*')
         action_parser.add_argument(
-                "specfile", type=argparse.FileType('rb'),
-                help=_("The RPM spec file to read"))
+            "specfile", type=argparse.FileType('rb'),
+            help=_("The RPM spec file to read"))
 
         get_cmd = commands.add_parser(
-                "get", parents=[action_parser], help=_("Download files"))
+            "get", parents=[action_parser], help=_("Download files"))
         get_cmd.add_argument("--insecure", action='store', default=False)
         get_cmd.add_argument(
-                "--force", "-f", action='store_true', default=False)
+            "--force", "-f", action='store_true', default=False)
         get_cmd.add_argument(
-                "--dry-run", "--dryrun", "-n", action='store_true',
-                default=False)
+            "--dry-run", "--dryrun", "-n", action='store_true',
+            default=False)
 
         get_src_group = get_cmd.add_mutually_exclusive_group()
         get_src_group.add_argument("--directory", "-C", action='store')
         get_src_group.add_argument("--sourcedir", "-R", action='store_true')
 
-        list_cmd = commands.add_parser(
-                "list", parents=[action_parser], help=_("List files"))
+        commands.add_parser(
+            "list", parents=[action_parser], help=_("List files"))
 
         version_cmd = commands.add_parser(
-                "version", help=_("Show spectool version"))
+            "version", help=_("Show spectool version"))
         version_cmd.set_defaults(cmd='version')
 
         return parser
@@ -105,10 +106,10 @@ class CLI(object):
                 prog=sys.argv[0], version=version))
         else:
             parsed_spec_path = os.path.join(
-                    self.tmpdir, "spectool-" + os.path.basename(
-                        self.args.specfile.name))
+                self.tmpdir, "spectool-" + os.path.basename(
+                    self.args.specfile.name))
             spechandler = RPMSpecHandler(
-                    self.tmpdir, args.specfile, parsed_spec_path)
+                self.tmpdir, args.specfile, parsed_spec_path)
 
             try:
                 specfile_res = spechandler.eval_specfile(self.args.define)
@@ -127,8 +128,7 @@ class CLI(object):
                 sys.exit(2)
 
             sources, patches = self.filter_sources_patches(
-                    args,
-                    specfile_res['sources'], specfile_res['patches'])
+                args, specfile_res['sources'], specfile_res['patches'])
 
             if args.cmd == 'list':
                 for prefix, what in (
@@ -157,6 +157,7 @@ class CLI(object):
                                 return 1
 
         return 0
+
 
 def main():
     try:

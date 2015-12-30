@@ -4,7 +4,7 @@
 # Copyright © 2015 Red Hat, Inc.
 
 from collections import defaultdict
-from logging import debug as log_debug, error as log_error
+from logging import debug as log_debug
 import re
 from subprocess import Popen, DEVNULL, PIPE
 
@@ -21,16 +21,16 @@ class RPMSpecHandler(object):
 
     macro_re = re.compile(rb"^\s*%(?P<name>\w+)")
     archstuff_re = re.compile(
-            rb"\s*(BuildArch(itectures)?|Exclu(d|siv)e(Arch|OS)|Icon)\s*:",
-            flags = re.IGNORECASE)
+        rb"\s*(BuildArch(itectures)?|Exclu(d|siv)e(Arch|OS)|Icon)\s*:",
+        re.IGNORECASE)
     copyright_re = re.compile(rb"^\s*Copyright\s*:", re.IGNORECASE)
     serial_re = re.compile(rb"^\s*Serial\s*:", re.IGNORECASE)
     source_patch_re = re.compile(
-            rb"^\s*(?P<sourcepatch>Source|Patch)(?P<index>\d+)?\s*:"
-            rb"\s*(?P<fileurl>.*\S)\s*$", re.IGNORECASE)
+        rb"^\s*(?P<sourcepatch>Source|Patch)(?P<index>\d+)?\s*:"
+        rb"\s*(?P<fileurl>.*\S)\s*$", re.IGNORECASE)
     group_re = re.compile(rb"^\s*Group\s*:", re.IGNORECASE)
     srcdir_re = re.compile(
-            rb"^\s*srcdir\s*:\s*(?P<srcdir>.*\S)\s*$", re.IGNORECASE)
+        rb"^\s*srcdir\s*:\s*(?P<srcdir>.*\S)\s*$", re.IGNORECASE)
 
     section_names = set((x.encode('utf-8') for x in (
         'package', 'description', 'prep', 'build', 'install', 'clean', 'pre',
@@ -42,7 +42,7 @@ class RPMSpecHandler(object):
         'if', 'ifos', 'ifnos', 'ifarch', 'ifnarch')))
 
     rpm_cmd_macros = (
-            '_topdir', '_sourcedir', '_builddir', '_srcrpmdir', '_rpmdir')
+        '_topdir', '_sourcedir', '_builddir', '_srcrpmdir', '_rpmdir')
 
     def __init__(self, tmpdir, in_specfile, out_specfile):
         self.tmpdir = tmpdir
@@ -132,8 +132,8 @@ class RPMSpecHandler(object):
         preamble_bytes = b"".join(preamble)
 
         self.out_specfile.write(
-                b"%description\n%prep\ncat << " + eof + b"\n" +
-                preamble_bytes + b"\nSrcDir: %{_sourcedir}\n" + eof)
+            b"%description\n%prep\ncat << " + eof + b"\n" +
+            preamble_bytes + b"\nSrcDir: %{_sourcedir}\n" + eof)
 
         self.out_specfile.close()
 
@@ -152,7 +152,7 @@ class RPMSpecHandler(object):
             stdout, stderr = rpm.communicate()
             if rpm.returncode:
                 raise RPMSpecEvalError(
-                        self.out_specfile_path, rpm.returncode, stderr)
+                    self.out_specfile_path, rpm.returncode, stderr)
 
             for l in stdout.split(b"\n"):
                 l = l.strip()
@@ -186,12 +186,12 @@ class RPMSpecHandler(object):
             with Popen(cmdline, stdin=DEVNULL, stdout=PIPE, stderr=DEVNULL) \
                     as rpm_pipe:
                 RPMSpecHandler.__need_conditionals_quirk = \
-                        b"1" not in rpm_pipe.stdout.read()
+                    b"1" not in rpm_pipe.stdout.read()
             return RPMSpecHandler.__need_conditionals_quirk
 
     def _write_conditionals_quirk(self):
         self.out_specfile.write(
-                "# RPM conditionals quirk\n".encode('utf-8'))
+            "# RPM conditionals quirk\n".encode('utf-8'))
         for macro, expansion in (
                 ("defined", "%%{?%{1}:1}%%{!?%{1}:0}"),
                 ("undefined", "%%{?%{1}:0}%%{!?%{1}:1}"),

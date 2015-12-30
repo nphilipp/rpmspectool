@@ -20,8 +20,10 @@ class DownloadError(RuntimeError):
 
 protocols_re = re.compile(r"^(?:ftp|https?)://", re.IGNORECASE)
 
+
 def is_url(url):
     return bool(protocols_re.search(url))
+
 
 def download(url, where=None, dry_run=False, insecure=False, force=False):
     if where is None:

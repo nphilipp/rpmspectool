@@ -6,6 +6,7 @@
 import gettext as _gettext
 import locale
 
+
 def init():
     locale.setlocale(locale.LC_ALL, "")
 
