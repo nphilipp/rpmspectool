@@ -122,7 +122,7 @@ class RPMSpecHandler(object):
         self.in_specfile.close()
 
         if not group_seen:
-            preamble.append(b"Group: spectool\n")
+            preamble.append(b"Group: rpmspectool\n")
 
         eof = b"EOF"
 

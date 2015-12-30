@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# rpmspectool.cli: CLI for spectool
+# rpmspectool.cli: CLI for rpmspectool
 # Copyright © 2015 Red Hat, Inc.
 
 import argparse
@@ -28,7 +28,7 @@ class CLI(object):
     @property
     def tmpdir(self):
         if not hasattr(self, '_tmpdir'):
-            self._tmpdir = tempfile.mkdtemp(prefix="spectool_")
+            self._tmpdir = tempfile.mkdtemp(prefix="rpmspectool_")
             log_debug("Created temporary directory '{}'".format(self._tmpdir))
             if not self.args.debug:
                 atexit.register(self._rm_tmpdir)
@@ -70,7 +70,7 @@ class CLI(object):
             "list", parents=[action_parser], help=_("List files"))
 
         version_cmd = commands.add_parser(
-            "version", help=_("Show spectool version"))
+            "version", help=_("Show rpmspectool version"))
         version_cmd.set_defaults(cmd='version')
 
         return parser
@@ -106,7 +106,7 @@ class CLI(object):
                 prog=sys.argv[0], version=version))
         else:
             parsed_spec_path = os.path.join(
-                self.tmpdir, "spectool-" + os.path.basename(
+                self.tmpdir, "rpmspectool-" + os.path.basename(
                     self.args.specfile.name))
             spechandler = RPMSpecHandler(
                 self.tmpdir, args.specfile, parsed_spec_path)
