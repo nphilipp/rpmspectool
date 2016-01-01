@@ -25,6 +25,10 @@ def is_url(url):
     return bool(protocols_re.search(url))
 
 
+umask = os.umask(0)
+os.umask(umask)
+
+
 def download(url, where=None, dry_run=False, insecure=False, force=False):
     if where is None:
         where = os.getcwd()
@@ -71,3 +75,5 @@ def download(url, where=None, dry_run=False, insecure=False, force=False):
     # set file modification time
     if ts != -1:
         os.utime(fpath, (time.time(), ts))
+    # NamedTemporaryFile sets mode to 0600, change it to default per umask
+    os.chmod(fpath, 0o666 & ~umask)
