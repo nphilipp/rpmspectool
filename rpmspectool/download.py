@@ -13,6 +13,9 @@ import pycurl
 from .i18n import _
 from .version import version
 
+umask = os.umask(0)
+os.umask(umask)
+
 
 class DownloadError(RuntimeError):
     pass
@@ -23,10 +26,6 @@ protocols_re = re.compile(r"^(?:ftp|https?)://", re.IGNORECASE)
 
 def is_url(url):
     return bool(protocols_re.search(url))
-
-
-umask = os.umask(0)
-os.umask(umask)
 
 
 def download(url, where=None, dry_run=False, insecure=False, force=False):
