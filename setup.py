@@ -12,7 +12,7 @@ setup(
     name="rpmspectool",
     version="1.99.5",
     author="Nils Philippsen",
-    author_email="nils@redhat.com",
+    author_email="nils@tiptoe.de",
     url="https://github.com/nphilipp/rpmspectool",
     download_url="https://pypi.python.org/pypi/rpmspectool",
     install_requires=["pycurl"],
