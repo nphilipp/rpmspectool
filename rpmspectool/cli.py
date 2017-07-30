@@ -2,6 +2,7 @@
 #
 # rpmspectool.cli: CLI for rpmspectool
 # Copyright © 2015 Red Hat, Inc.
+# Copyright © 2017 Nils Philippsen <nils@tiptoe.de>
 
 import argparse
 import atexit
@@ -16,6 +17,28 @@ from .i18n import init as i18n_init, _
 from .rpm import RPMSpecHandler, RPMSpecEvalError
 from .download import is_url, download, DownloadError
 from .version import version
+
+
+class IntListAction(argparse.Action):
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        int_list = []
+        for item in values.split(","):
+            try:
+                int_list.append(int(item))
+            except ValueError:
+                try:
+                    start, end = (int(x) for x in item.split("-", 1))
+                except (TypeError, ValueError):
+                    raise argparse.ArgumentError(
+                        "can't convert {!r} to list of ints".format(item))
+                else:
+                    int_list.extend(list(range(start, end + 1)))
+
+        if getattr(namespace, self.dest) is None:
+            setattr(namespace, self.dest, int_list)
+        else:
+            getattr(namespace, self.dest).extend(int_list)
 
 
 class CLI(object):
@@ -45,10 +68,17 @@ class CLI(object):
         action_parser.add_argument("--verbose", "-v", action='store_true')
         action_parser.add_argument(
             "--define", "-d", action='append', default=[])
-        action_parser.add_argument(
-            "--sources", "--source", "-s", type=int, nargs='*')
-        action_parser.add_argument(
-            "--patches", "--patch", "-p", type=int, nargs='*')
+
+        source_group = action_parser.add_mutually_exclusive_group()
+        source_group.add_argument("--sources", "-S", action="store_true")
+        source_group.add_argument("--source", "-s", action=IntListAction,
+                                  type=str)
+
+        patches_group = action_parser.add_mutually_exclusive_group()
+        patches_group.add_argument("--patches", "-P", action="store_true")
+        patches_group.add_argument("--patch", "-p", action=IntListAction,
+                                   type=str)
+
         action_parser.add_argument(
             "specfile", type=argparse.FileType('rb'),
             help=_("The RPM spec file to read"))
@@ -75,18 +105,31 @@ class CLI(object):
 
         return parser
 
-    def filter_sources_patches(self, args, sources, patches):
-        # only --sources ... or --patches ... is specified, null the other
-        if args.sources is None and args.patches is not None:
-            sources = {}
-        elif args.sources is not None and args.patches is None:
-            patches = {}
+    def filter_sources_patches(self, args, spec_sources, spec_patches):
+        if args.source:
+            sources = {x: spec_sources[x] for x in args.source
+                       if x in spec_sources}
+        elif args.sources:
+            sources = spec_sources
+        else:
+            sources = None
 
-        if args.sources:
-            sources = {x: sources[x] for x in args.sources}
+        if args.patch:
+            patches = {x: spec_patches[x] for x in args.patch
+                       if x in spec_patches}
+        elif args.patches:
+            patches = spec_patches
+        else:
+            patches = None
 
-        if args.patches:
-            patches = {x: patches[x] for x in args.patches}
+        if sources is None and patches is None:
+            # Neither of --sources/--source/--patches/--patch was specified,
+            # default to all
+            sources = spec_sources
+            patches = spec_patches
+
+        sources = sources or {}
+        patches = patches or {}
 
         return sources, patches
 
