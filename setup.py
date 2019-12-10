@@ -20,7 +20,6 @@ setup(
     install_requires=["pycurl"],
     packages=find_packages(),
     include_package_data=True,
-    scripts=["scripts/rpmspectool"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -30,4 +29,9 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Topic :: Software Development :: Build Tools",
     ],
+    entry_points={
+        'console_scripts': [
+            'rpmspectool = rpmspectool.cli:main',
+        ],
+    },
 )

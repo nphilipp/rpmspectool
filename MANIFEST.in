@@ -1,3 +1,2 @@
-include rpmspectool.py
 include COPYING
 include README.md
