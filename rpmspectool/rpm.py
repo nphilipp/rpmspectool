@@ -32,11 +32,15 @@ class RPMSpecHandler(object):
     srcdir_re = re.compile(
         rb"^\s*srcdir\s*:\s*(?P<srcdir>.*\S)\s*$", re.IGNORECASE)
 
-    section_names = set((x.encode('utf-8') for x in (
+    preamble_delimiters = {n.encode('utf-8') for n in (
+        # section names
         'package', 'description', 'prep', 'build', 'install', 'clean', 'pre',
         'preun', 'post', 'postun', 'triggerin', 'triggerun', 'triggerpostun',
         'files', 'changelog', 'pretrans', 'posttrans', 'verifyscript',
-        'triggerprein')))
+        'triggerprein',
+        # problematic macros
+        'python_subpackages',
+    )}
 
     conditional_names = set((x.encode('utf-8') for x in (
         'if', 'ifos', 'ifnos', 'ifarch', 'ifnarch')))
@@ -92,7 +96,7 @@ class RPMSpecHandler(object):
             m = self.macro_re.search(line)
             if m:
                 name = m.group('name')
-                if name in self.section_names:
+                if name in self.preamble_delimiters:
                     # unwind open conditional blocks
                     unwinding_lines = [b"%endif\n"] * conditional_depth
                     preamble.extend(unwinding_lines)
