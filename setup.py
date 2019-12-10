@@ -11,6 +11,7 @@ if sys.version_info.major < 3:
 
 
 install_requires = [
+    'argcomplete',
     'pycurl',
 ]
 
@@ -39,4 +40,7 @@ setup(
             'rpmspectool = rpmspectool.cli:main',
         ],
     },
+    data_files=[
+        ('share/bash-completion/completions', ['shell-completions/bash/rpmspectool']),
+    ],
 )

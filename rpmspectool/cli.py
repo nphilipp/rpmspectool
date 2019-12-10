@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 #
 # rpmspectool.cli: CLI for rpmspectool
-# Copyright © 2015 Red Hat, Inc.
+# Copyright © 2015, 2019 Red Hat, Inc.
 # Copyright © 2017 Nils Philippsen <nils@tiptoe.de>
 
+import argcomplete
 import argparse
 import atexit
 import logging
@@ -135,6 +136,7 @@ class CLI(object):
 
     def main(self):
         argparser = self.get_arg_parser()
+        argcomplete.autocomplete(argparser)
         args = self.args = argparser.parse_args(sys.argv[1:])
 
         if args.debug:
