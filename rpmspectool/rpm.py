@@ -88,8 +88,8 @@ class RPMSpecHandler(object):
         group_seen = False
         conditional_depth = 0
 
-        for l in self.in_specfile.readlines():
-            m = self.macro_re.search(l)
+        for line in self.in_specfile.readlines():
+            m = self.macro_re.search(line)
             if m:
                 name = m.group('name')
                 if name in self.section_names:
@@ -106,17 +106,17 @@ class RPMSpecHandler(object):
                     conditional_depth -= 1
 
             # ignore arch specifics
-            if self.archstuff_re.search(l):
+            if self.archstuff_re.search(line):
                 continue
 
             # replace legacy tags
-            l = self.copyright_re.sub(rb"License", l)
-            l = self.serial_re.sub(rb"Epoch", l)
+            line = self.copyright_re.sub(rb"License", line)
+            line = self.serial_re.sub(rb"Epoch", line)
 
-            preamble.append(l)
-            self.out_specfile.write(l)
+            preamble.append(line)
+            self.out_specfile.write(line)
 
-            if self.group_re.search(l):
+            if self.group_re.search(line):
                 group_seen = True
 
         self.in_specfile.close()
@@ -154,22 +154,22 @@ class RPMSpecHandler(object):
                 raise RPMSpecEvalError(
                     self.out_specfile_path, rpm.returncode, stderr)
 
-            for l in stdout.split(b"\n"):
-                l = l.strip()
-                m = self.source_patch_re.search(l)
+            for line in stdout.split(b"\n"):
+                line = line.strip()
+                m = self.source_patch_re.search(line)
                 if m:
                     if m.group('sourcepatch').lower() == b'source':
-                        log_debug("Found source: {!r}".format(l))
+                        log_debug("Found source: {!r}".format(line))
                         spdict = ret_dict['sources']
                     else:
-                        log_debug("Found patch: {!r}".format(l))
+                        log_debug("Found patch: {!r}".format(line))
                         spdict = ret_dict['patches']
                     try:
                         index = int(m.group('index'))
                     except TypeError:
                         index = 0
                     spdict[index] = m.group('fileurl').decode('utf-8')
-                m = self.srcdir_re.search(l)
+                m = self.srcdir_re.search(line)
                 if m:
                     ret_dict['srcdir'] = m.group('srcdir').decode('utf-8')
 

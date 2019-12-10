@@ -1,4 +1,7 @@
+import pkg_resources
+
+
 try:
-    version = __import__('pkg_resources').require('rpmspectool')[0].version
-except:
+    version = pkg_resources.require('rpmspectool')[0].version
+except pkg_resources.DistributionNotFound:
     version = 'git'

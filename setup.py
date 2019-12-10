@@ -4,9 +4,11 @@ import sys
 
 from setuptools import find_packages, setup
 
+
 if sys.version_info.major < 3:
     print("Python versions older than 3 are not supported.", file=sys.stderr)
     sys.exit(1)
+
 
 setup(
     name="rpmspectool",
@@ -27,5 +29,5 @@ setup(
         "Environment :: Console",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Topic :: Software Development :: Build Tools",
-        ],
-    )
+    ],
+)
