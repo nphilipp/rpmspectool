@@ -10,6 +10,11 @@ if sys.version_info.major < 3:
     sys.exit(1)
 
 
+install_requires = [
+    'pycurl',
+]
+
+
 setup(
     name="rpmspectool",
     version="1.99.6",
@@ -17,7 +22,7 @@ setup(
     author_email="nils@tiptoe.de",
     url="https://github.com/nphilipp/rpmspectool",
     download_url="https://pypi.python.org/pypi/rpmspectool",
-    install_requires=["pycurl"],
+    install_requires=install_requires,
     packages=find_packages(),
     include_package_data=True,
     classifiers=[
