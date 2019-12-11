@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import sys
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 
 if sys.version_info.major < 3:
@@ -24,8 +24,8 @@ setup(
     url="https://github.com/nphilipp/rpmspectool",
     download_url="https://pypi.python.org/pypi/rpmspectool",
     install_requires=install_requires,
-    packages=find_packages(),
-    include_package_data=True,
+    packages=['rpmspectool'],
+    include_package_data=False,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
