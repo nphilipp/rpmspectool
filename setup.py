@@ -18,7 +18,7 @@ install_requires = [
 
 setup(
     name="rpmspectool",
-    version="1.99.6",
+    version="1.99.7",
     author="Nils Philippsen",
     author_email="nils@tiptoe.de",
     url="https://github.com/nphilipp/rpmspectool",
