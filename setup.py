@@ -13,6 +13,7 @@ if sys.version_info.major < 3:
 install_requires = [
     'argcomplete',
     'pycurl',
+    'setuptools',
 ]
 
 
