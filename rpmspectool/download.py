@@ -5,8 +5,8 @@
 
 import os
 import re
-from tempfile import NamedTemporaryFile
 import time
+from tempfile import NamedTemporaryFile
 
 import pycurl
 

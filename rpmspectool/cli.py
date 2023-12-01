@@ -4,19 +4,22 @@
 # Copyright © 2015, 2019 Red Hat, Inc.
 # Copyright © 2017 Nils Philippsen <nils@tiptoe.de>
 
-import argcomplete
 import argparse
 import atexit
 import logging
-from logging import debug as log_debug, error as log_error
 import os
 import shutil
 import sys
 import tempfile
+from logging import debug as log_debug
+from logging import error as log_error
 
-from .i18n import init as i18n_init, _
-from .rpm import RPMSpecHandler, RPMSpecEvalError
-from .download import is_url, download, DownloadError
+import argcomplete
+
+from .download import DownloadError, download, is_url
+from .i18n import _
+from .i18n import init as i18n_init
+from .rpm import RPMSpecEvalError, RPMSpecHandler
 from .version import version
 
 

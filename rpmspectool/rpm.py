@@ -3,10 +3,10 @@
 # rpmspectool.rpm: RPM spec handling for rpmspectool
 # Copyright © 2015 Red Hat, Inc.
 
+import re
 from collections import defaultdict
 from logging import debug as log_debug
-import re
-from subprocess import Popen, DEVNULL, PIPE
+from subprocess import DEVNULL, PIPE, Popen
 
 
 class RPMSpecEvalError(Exception):
