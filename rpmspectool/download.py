@@ -32,8 +32,8 @@ def download(url, where=None, dry_run=False, insecure=False, force=False):
     if where is None:
         where = os.getcwd()
 
-    assert(is_url(url))
-    assert(not url.endswith("/"))
+    assert is_url(url)
+    assert not url.endswith("/")
 
     fname = url.split("/")[-1]
     fpath = os.path.join(where, fname)
@@ -59,8 +59,7 @@ def download(url, where=None, dry_run=False, insecure=False, force=False):
             ts = c.getinfo(c.INFO_FILETIME)
             http_status = c.getinfo(pycurl.HTTP_CODE)
             if not 200 <= http_status < 300:
-                raise DownloadError(_("Couldn't download {}: {}".format(
-                    url, http_status)))
+                raise DownloadError(_("Couldn't download {}: {}".format(url, http_status)))
         finally:
             c.close()
 

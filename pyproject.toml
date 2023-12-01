@@ -21,3 +21,6 @@ pycurl = "^7.43.0.5"
 
 [tool.poetry.scripts]
 rpmspectool = " rpmspectool.cli:main"
+
+[tool.black]
+line_length = 100

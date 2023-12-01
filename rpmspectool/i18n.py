@@ -7,7 +7,7 @@ import gettext as _gettext
 import locale
 
 
-catalog = _gettext.translation('rpmspectool', fallback=True)
+catalog = _gettext.translation("rpmspectool", fallback=True)
 
 _ = gettext = catalog.gettext
 

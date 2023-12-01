@@ -10,43 +10,59 @@ from subprocess import Popen, DEVNULL, PIPE
 
 
 class RPMSpecEvalError(Exception):
-
     pass
 
 
 class RPMSpecHandler(object):
-
     rpmcmd = "rpm"
     rpmbuildcmd = "rpmbuild"
 
     macro_re = re.compile(rb"^\s*%(?P<name>\w+)")
     archstuff_re = re.compile(
-        rb"\s*(BuildArch(itectures)?|Exclu(d|siv)e(Arch|OS)|Icon)\s*:",
-        re.IGNORECASE)
+        rb"\s*(BuildArch(itectures)?|Exclu(d|siv)e(Arch|OS)|Icon)\s*:", re.IGNORECASE
+    )
     copyright_re = re.compile(rb"^\s*Copyright\s*:", re.IGNORECASE)
     serial_re = re.compile(rb"^\s*Serial\s*:", re.IGNORECASE)
     source_patch_re = re.compile(
-        rb"^\s*(?P<sourcepatch>Source|Patch)(?P<index>\d+)?\s*:"
-        rb"\s*(?P<fileurl>.*\S)\s*$", re.IGNORECASE)
+        rb"^\s*(?P<sourcepatch>Source|Patch)(?P<index>\d+)?\s*:" rb"\s*(?P<fileurl>.*\S)\s*$",
+        re.IGNORECASE,
+    )
     group_re = re.compile(rb"^\s*Group\s*:", re.IGNORECASE)
-    srcdir_re = re.compile(
-        rb"^\s*srcdir\s*:\s*(?P<srcdir>.*\S)\s*$", re.IGNORECASE)
+    srcdir_re = re.compile(rb"^\s*srcdir\s*:\s*(?P<srcdir>.*\S)\s*$", re.IGNORECASE)
 
-    preamble_delimiters = {n.encode('utf-8') for n in (
-        # section names
-        'package', 'description', 'prep', 'build', 'install', 'clean', 'pre',
-        'preun', 'post', 'postun', 'triggerin', 'triggerun', 'triggerpostun',
-        'files', 'changelog', 'pretrans', 'posttrans', 'verifyscript',
-        'triggerprein',
-        # problematic macros
-        'python_subpackages',
-    )}
+    preamble_delimiters = {
+        n.encode("utf-8")
+        for n in (
+            # section names
+            "package",
+            "description",
+            "prep",
+            "build",
+            "install",
+            "clean",
+            "pre",
+            "preun",
+            "post",
+            "postun",
+            "triggerin",
+            "triggerun",
+            "triggerpostun",
+            "files",
+            "changelog",
+            "pretrans",
+            "posttrans",
+            "verifyscript",
+            "triggerprein",
+            # problematic macros
+            "python_subpackages",
+        )
+    }
 
-    conditional_names = set((x.encode('utf-8') for x in (
-        'if', 'ifos', 'ifnos', 'ifarch', 'ifnarch')))
+    conditional_names = set(
+        (x.encode("utf-8") for x in ("if", "ifos", "ifnos", "ifarch", "ifnarch"))
+    )
 
-    rpm_cmd_macros = (
-        '_topdir', '_sourcedir', '_builddir', '_srcrpmdir', '_rpmdir')
+    rpm_cmd_macros = ("_topdir", "_sourcedir", "_builddir", "_srcrpmdir", "_rpmdir")
 
     def __init__(self, tmpdir, in_specfile, out_specfile):
         self.tmpdir = tmpdir
@@ -73,17 +89,20 @@ class RPMSpecHandler(object):
 
         for macro in self.rpm_cmd_macros:
             self.out_specfile.write(
-                "%undefine {macro}\n%define {macro} ".format(
-                    macro=macro).encode('utf-8'))
+                "%undefine {macro}\n%define {macro} ".format(macro=macro).encode("utf-8")
+            )
             with Popen(
-                    cmdline + ("%{}\n".format(macro),), stdin=DEVNULL,
-                    stdout=PIPE, stderr=DEVNULL, close_fds=True) as rpmpipe:
+                cmdline + ("%{}\n".format(macro),),
+                stdin=DEVNULL,
+                stdout=PIPE,
+                stderr=DEVNULL,
+                close_fds=True,
+            ) as rpmpipe:
                 self.out_specfile.write(rpmpipe.stdout.read())
         self.out_specfile.write(b"\n")
 
         for definition in definitions:
-            self.out_specfile.write(
-                "%define {}\n".format(definition).encode('utf-8'))
+            self.out_specfile.write("%define {}\n".format(definition).encode("utf-8"))
 
         if self.need_conditionals_quirk:
             self._write_conditionals_quirk()
@@ -95,7 +114,7 @@ class RPMSpecHandler(object):
         for line in self.in_specfile.readlines():
             m = self.macro_re.search(line)
             if m:
-                name = m.group('name')
+                name = m.group("name")
                 if name in self.preamble_delimiters:
                     # unwind open conditional blocks
                     unwinding_lines = [b"%endif\n"] * conditional_depth
@@ -106,7 +125,7 @@ class RPMSpecHandler(object):
                     break
                 elif name in self.conditional_names:
                     conditional_depth += 1
-                elif name == b'endif':
+                elif name == b"endif":
                     conditional_depth -= 1
 
             # ignore arch specifics
@@ -136,8 +155,13 @@ class RPMSpecHandler(object):
         preamble_bytes = b"".join(preamble)
 
         self.out_specfile.write(
-            b"%description\n%prep\ncat << " + eof + b"\n" +
-            preamble_bytes + b"\nSrcDir: %{_sourcedir}\n" + eof)
+            b"%description\n%prep\ncat << "
+            + eof
+            + b"\n"
+            + preamble_bytes
+            + b"\nSrcDir: %{_sourcedir}\n"
+            + eof
+        )
 
         self.out_specfile.close()
 
@@ -150,32 +174,29 @@ class RPMSpecHandler(object):
 
         ret_dict = defaultdict(dict)
 
-        with Popen(
-                cmdline, stdin=DEVNULL, stdout=PIPE, stderr=PIPE,
-                close_fds=True) as rpm:
+        with Popen(cmdline, stdin=DEVNULL, stdout=PIPE, stderr=PIPE, close_fds=True) as rpm:
             stdout, stderr = rpm.communicate()
             if rpm.returncode:
-                raise RPMSpecEvalError(
-                    self.out_specfile_path, rpm.returncode, stderr)
+                raise RPMSpecEvalError(self.out_specfile_path, rpm.returncode, stderr)
 
             for line in stdout.split(b"\n"):
                 line = line.strip()
                 m = self.source_patch_re.search(line)
                 if m:
-                    if m.group('sourcepatch').lower() == b'source':
+                    if m.group("sourcepatch").lower() == b"source":
                         log_debug("Found source: {!r}".format(line))
-                        spdict = ret_dict['sources']
+                        spdict = ret_dict["sources"]
                     else:
                         log_debug("Found patch: {!r}".format(line))
-                        spdict = ret_dict['patches']
+                        spdict = ret_dict["patches"]
                     try:
-                        index = int(m.group('index'))
+                        index = int(m.group("index"))
                     except TypeError:
                         index = 0
-                    spdict[index] = m.group('fileurl').decode('utf-8')
+                    spdict[index] = m.group("fileurl").decode("utf-8")
                 m = self.srcdir_re.search(line)
                 if m:
-                    ret_dict['srcdir'] = m.group('srcdir').decode('utf-8')
+                    ret_dict["srcdir"] = m.group("srcdir").decode("utf-8")
 
         return ret_dict
 
@@ -184,29 +205,24 @@ class RPMSpecHandler(object):
         try:
             return RPMSpecHandler.__need_conditionals_quirk
         except AttributeError:
-            cmdline = (
-                self.rpmcmd,
-                self.rpmcmd, "--eval", "%{?defined:1}%{!?defined:0}")
-            with Popen(cmdline, stdin=DEVNULL, stdout=PIPE, stderr=DEVNULL) \
-                    as rpm_pipe:
-                RPMSpecHandler.__need_conditionals_quirk = \
-                    b"1" not in rpm_pipe.stdout.read()
+            cmdline = (self.rpmcmd, self.rpmcmd, "--eval", "%{?defined:1}%{!?defined:0}")
+            with Popen(cmdline, stdin=DEVNULL, stdout=PIPE, stderr=DEVNULL) as rpm_pipe:
+                RPMSpecHandler.__need_conditionals_quirk = b"1" not in rpm_pipe.stdout.read()
             return RPMSpecHandler.__need_conditionals_quirk
 
     def _write_conditionals_quirk(self):
-        self.out_specfile.write(
-            "# RPM conditionals quirk\n".encode('utf-8'))
+        self.out_specfile.write("# RPM conditionals quirk\n".encode("utf-8"))
         for macro, expansion in (
-                ("defined", "%%{?%{1}:1}%%{!?%{1}:0}"),
-                ("undefined", "%%{?%{1}:0}%%{!?%{1}:1}"),
-                ("with", "%%{?with_%{1}:1}%%{!?with_%{1}:0}"),
-                ("without", "%%{?with_%{1}:0}%%{!?with_%{1}:1}"),
-                ("bcond_with",
-                    "%%{?_with_%{1}:%%global with_%{1} 1}"),
-                ("bcond_without",
-                    "%%{!?_without_%{1}:%%global with_%{1} 1}"),
-                ):
+            ("defined", "%%{?%{1}:1}%%{!?%{1}:0}"),
+            ("undefined", "%%{?%{1}:0}%%{!?%{1}:1}"),
+            ("with", "%%{?with_%{1}:1}%%{!?with_%{1}:0}"),
+            ("without", "%%{?with_%{1}:0}%%{!?with_%{1}:1}"),
+            ("bcond_with", "%%{?_with_%{1}:%%global with_%{1} 1}"),
+            ("bcond_without", "%%{!?_without_%{1}:%%global with_%{1} 1}"),
+        ):
             self.out_specfile.write(
                 "%undefine {macro}\n"
                 "%global {macro}() %{{expand:{expansion}}}\n".format(
-                    macro=macro, expansion=expansion).encode('utf-8'))
+                    macro=macro, expansion=expansion
+                ).encode("utf-8")
+            )
