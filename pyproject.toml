@@ -23,11 +23,15 @@ pycurl = "^7.43.0.5"
 rpmspectool = " rpmspectool.cli:main"
 
 [tool.poetry.group.dev.dependencies]
+coverage = "^7"
 pytest = "^6 || ^7"
 pytest-cov = "^4"
 
 [tool.black]
 line_length = 100
+
+[tool.pytest.ini_options]
+addopts = "--cov-config=.coveragerc --cov=rpmspectool --cov-report=xml --cov-report=term --cov-report=html"
 
 [tool.ruff]
 select = ["E", "F", "W", "I"]
