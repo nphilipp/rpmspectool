@@ -39,7 +39,7 @@ def download(url, where=None, dry_run=False, insecure=False, force=False):
     fpath = os.path.join(where, fname)
 
     if dry_run:
-        print("NOT downloading {}' to '{}'".format(url, fpath))
+        print("NOT downloading '{}' to '{}'".format(url, fpath))
         return
 
     with NamedTemporaryFile(dir=where, prefix=fname, mode="wb") as fobj:
