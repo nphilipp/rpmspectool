@@ -1,6 +1,3 @@
-import pkg_resources
+from importlib import metadata
 
-try:
-    version = pkg_resources.require("rpmspectool")[0].version
-except pkg_resources.DistributionNotFound:
-    version = "git"
+version = metadata.version("rpmspectool")
