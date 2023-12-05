@@ -5,6 +5,7 @@
 
 import re
 from collections import defaultdict
+from functools import lru_cache
 from logging import debug as log_debug
 from subprocess import DEVNULL, PIPE, Popen
 
@@ -98,7 +99,7 @@ class RPMSpecHandler(object):
             self.out_specfile_path = out_specfile.name
             self.out_specfile = out_specfile
 
-    def eval_specfile(self, definitions=None):
+    def eval_specfile(self, definitions=()):
         log_debug("eval_specfile()")
 
         log_debug("writing parsed file '{}'".format(self.out_specfile_path))
@@ -165,20 +166,13 @@ class RPMSpecHandler(object):
         if not group_seen:
             preamble.append(b"Group: rpmspectool\n")
 
-        eof = b"EOF"
-
-        while eof in preamble:
-            eof += b"_EOF"
-
         preamble_bytes = b"".join(preamble)
 
         self.out_specfile.write(
-            b"%description\n%prep\ncat << "
-            + eof
-            + b"\n"
+            b"%description\n%prep\ncat << EOF\n"
             + preamble_bytes
             + b"\nSrcDir: %{_sourcedir}\n"
-            + eof
+            + b"EOF\n"
         )
 
         self.out_specfile.close()
@@ -192,6 +186,8 @@ class RPMSpecHandler(object):
 
         ret_dict = defaultdict(dict)
 
+        sourcepatchidx = {b"source": -1, b"patch": -1}
+
         with Popen(cmdline, stdin=DEVNULL, stdout=PIPE, stderr=PIPE, close_fds=True) as rpm:
             stdout, stderr = rpm.communicate()
             if rpm.returncode:
@@ -201,7 +197,8 @@ class RPMSpecHandler(object):
                 line = line.strip()
                 m = self.source_patch_re.search(line)
                 if m:
-                    if m.group("sourcepatch").lower() == b"source":
+                    sourcepatch = m.group("sourcepatch").lower()
+                    if sourcepatch == b"source":
                         log_debug("Found source: {!r}".format(line))
                         spdict = ret_dict["sources"]
                     else:
@@ -210,7 +207,8 @@ class RPMSpecHandler(object):
                     try:
                         index = int(m.group("index"))
                     except TypeError:
-                        index = 0
+                        index = sourcepatchidx[sourcepatch] + 1
+                    sourcepatchidx[sourcepatch] = index
                     spdict[index] = m.group("fileurl").decode("utf-8")
                 m = self.srcdir_re.search(line)
                 if m:
@@ -218,15 +216,16 @@ class RPMSpecHandler(object):
 
         return ret_dict
 
+    @staticmethod
+    @lru_cache(None)
+    def _get_need_conditionals_quirk(rpmcmd):
+        cmdline = (rpmcmd, rpmcmd, "--eval", "%{?defined:1}%{!?defined:0}")
+        with Popen(cmdline, stdin=DEVNULL, stdout=PIPE, stderr=DEVNULL) as rpm_pipe:
+            return b"1" not in rpm_pipe.stdout.read()
+
     @property
     def need_conditionals_quirk(self):
-        try:
-            return RPMSpecHandler.__need_conditionals_quirk
-        except AttributeError:
-            cmdline = (self.rpmcmd, self.rpmcmd, "--eval", "%{?defined:1}%{!?defined:0}")
-            with Popen(cmdline, stdin=DEVNULL, stdout=PIPE, stderr=DEVNULL) as rpm_pipe:
-                RPMSpecHandler.__need_conditionals_quirk = b"1" not in rpm_pipe.stdout.read()
-            return RPMSpecHandler.__need_conditionals_quirk
+        return self._get_need_conditionals_quirk(rpmcmd=self.rpmcmd)
 
     def _write_conditionals_quirk(self):
         self.out_specfile.write("# RPM conditionals quirk\n".encode("utf-8"))
@@ -240,7 +239,7 @@ class RPMSpecHandler(object):
         ):
             self.out_specfile.write(
                 "%undefine {macro}\n"
-                "%global {macro}() %{{expand:{expansion}}}\n".format(
+                "%define {macro}() %{{expand:{expansion}}}\n".format(
                     macro=macro, expansion=expansion
                 ).encode("utf-8")
             )

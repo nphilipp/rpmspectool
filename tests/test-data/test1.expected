@@ -1,0 +1,4 @@
+Source0: https://github.com/some/example/repo/archive/v1.tar.gz#/test-1.tar.gz
+Patch0: https://github.com/some/example/repo/commit/0123456789abcdef0123456789abcdef01234567.patch
+Patch3: boop.patch
+Patch4: https://github.com/some/example/repo/commit/abcdef0123456789abcdef0123456789abcdef01.patch
