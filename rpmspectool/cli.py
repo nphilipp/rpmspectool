@@ -33,7 +33,9 @@ class IntListAction(argparse.Action):
                 try:
                     start, end = (int(x) for x in item.split("-", 1))
                 except (TypeError, ValueError):
-                    raise argparse.ArgumentError("can't convert {!r} to list of ints".format(item))
+                    raise argparse.ArgumentError(
+                        self, "can't convert {!r} to list of ints".format(item)
+                    )
                 else:
                     int_list.extend(list(range(start, end + 1)))
 
@@ -59,7 +61,7 @@ class CLI(object):
                 atexit.register(self._rm_tmpdir)
         return self._tmpdir
 
-    def get_arg_parser(self, args=None):
+    def get_arg_parser(self):
         parser = argparse.ArgumentParser(description=_("Utility for RPM spec files"))
         parser.add_argument("--debug", "-D", action="store_true")
 
@@ -82,7 +84,7 @@ class CLI(object):
         )
 
         get_cmd = commands.add_parser("get", parents=[action_parser], help=_("Download files"))
-        get_cmd.add_argument("--insecure", action="store", default=False)
+        get_cmd.add_argument("--insecure", action="store_true", default=False)
         get_cmd.add_argument("--force", "-f", action="store_true", default=False)
         get_cmd.add_argument("--dry-run", "--dryrun", "-n", action="store_true", default=False)
 
@@ -164,7 +166,7 @@ class CLI(object):
                 for prefix, what in (("Source", sources), ("Patch", patches)):
                     for i in sorted(what):
                         print("{}{}: {}".format(prefix, i, what[i]))
-            elif args.cmd == "get":
+            else:  # args.cmd == "get"
                 if getattr(args, "sourcedir"):
                     where = specfile_res["srcdir"]
                 else:
@@ -186,7 +188,11 @@ class CLI(object):
                                 return 1
                             except FileExistsError as e:
                                 log_error(
-                                    "{}: {}".format(e.args[1], getattr(e, "filename2", e.filename))
+                                    e.args[1] + f": {e.filename}"
+                                    if e.filename
+                                    else "" + f", {e.filename2}"
+                                    if e.filename2
+                                    else ""
                                 )
                                 return 1
 
