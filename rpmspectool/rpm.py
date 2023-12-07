@@ -102,16 +102,14 @@ class RPMSpecHandler(object):
     def eval_specfile(self, definitions=()):
         log_debug("eval_specfile()")
 
-        log_debug("writing parsed file '{}'".format(self.out_specfile_path))
+        log_debug("writing parsed file '%s'", self.out_specfile_path)
 
         cmdline = (self.rpmcmd, "--eval")
 
         for macro in self.rpm_cmd_macros:
-            self.out_specfile.write(
-                "%undefine {macro}\n%define {macro} ".format(macro=macro).encode("utf-8")
-            )
+            self.out_specfile.write(f"%undefine {macro}\n%define {macro} ".encode("utf-8"))
             with Popen(
-                cmdline + ("%{}\n".format(macro),),
+                cmdline + (f"%{macro}\n",),
                 stdin=DEVNULL,
                 stdout=PIPE,
                 stderr=DEVNULL,
@@ -121,7 +119,7 @@ class RPMSpecHandler(object):
         self.out_specfile.write(b"\n")
 
         for definition in definitions:
-            self.out_specfile.write("%define {}\n".format(definition).encode("utf-8"))
+            self.out_specfile.write(f"%define {definition}\n".encode("utf-8"))
 
         if self.need_conditionals_quirk:
             self._write_conditionals_quirk()
@@ -180,7 +178,7 @@ class RPMSpecHandler(object):
         cmdline = [self.rpmbuildcmd]
 
         for macro in self.rpm_cmd_macros:
-            cmdline.extend(("--define", "{} {}".format(macro, self.tmpdir)))
+            cmdline.extend(("--define", f"{macro} {self.tmpdir}"))
 
         cmdline.extend(("--nodeps", "-bp", self.out_specfile_path))
 
@@ -199,10 +197,10 @@ class RPMSpecHandler(object):
                 if m:
                     sourcepatch = m.group("sourcepatch").lower()
                     if sourcepatch == b"source":
-                        log_debug("Found source: {!r}".format(line))
+                        log_debug("Found source: %r", line)
                         spdict = ret_dict["sources"]
                     else:
-                        log_debug("Found patch: {!r}".format(line))
+                        log_debug("Found patch: %r", line)
                         spdict = ret_dict["patches"]
                     try:
                         index = int(m.group("index"))
@@ -238,8 +236,5 @@ class RPMSpecHandler(object):
             ("bcond_without", "%%{!?_without_%{1}:%%global with_%{1} 1}"),
         ):
             self.out_specfile.write(
-                "%undefine {macro}\n"
-                "%define {macro}() %{{expand:{expansion}}}\n".format(
-                    macro=macro, expansion=expansion
-                ).encode("utf-8")
+                f"%undefine {macro}\n%define {macro}() %{{expand:{expansion}}}\n".encode("utf-8")
             )

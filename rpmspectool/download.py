@@ -38,7 +38,7 @@ def download(url, where=None, dry_run=False, insecure=False, force=False):
     fpath = os.path.join(where, fname)
 
     if dry_run:
-        print("NOT downloading '{}' to '{}'".format(url, fpath))
+        print(f"NOT downloading '{url}' to '{fpath}'")
         return
 
     with NamedTemporaryFile(dir=where, prefix=fname, mode="wb") as fobj:
@@ -48,17 +48,17 @@ def download(url, where=None, dry_run=False, insecure=False, force=False):
         c.setopt(c.FOLLOWLOCATION, True)
         # request file modification time
         c.setopt(c.OPT_FILETIME, True)
-        c.setopt(c.USERAGENT, "rpmspectool/{}".format(version))
+        c.setopt(c.USERAGENT, f"rpmspectool/{version}")
         if insecure:
             c.setopt(c.SSL_VERIFYPEER, False)
             c.setopt(c.SSL_VERIFYHOST, False)
         try:
-            print("Downloading '{}' to '{}'".format(url, fpath))
+            print(f"Downloading '{url}' to '{fpath}'")
             c.perform()
             ts = c.getinfo(c.INFO_FILETIME)
             http_status = c.getinfo(pycurl.HTTP_CODE)
             if not 200 <= http_status < 300:
-                raise DownloadError("Couldn't download {}: {}".format(url, http_status))
+                raise DownloadError(f"Couldn't download {url}: {http_status}")
         finally:
             c.close()
 
