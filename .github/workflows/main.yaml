@@ -1,0 +1,47 @@
+---
+# SPDX-FileCopyrightText: Contributors to the Fedora Project
+#
+# SPDX-License-Identifier: MIT
+
+name: CI
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  ci-statictests:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    container: fedorapython/fedora-python-tox:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: run tests through tox
+        run: "tox -e black,ruff,absolufy-imports,poetry-check"
+
+  ci-testsuite:
+    strategy:
+      fail-fast: false
+      matrix:
+        pyver: [311, 312]
+    runs-on: ubuntu-latest
+    container: fedorapython/fedora-python-tox:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install basic RPM dependencies
+        run: >
+          dnf -y install
+          glibc-langpack-de
+          glibc-langpack-en
+          libcurl-devel
+          openssl-devel
+          rpm
+          rpm-build
+
+      - name: Set up testrunner user
+        run: |
+          useradd testrunner
+          chown -R testrunner: .
+
+      - name: run tests through tox
+        run: |
+          runuser -u testrunner -- tox -e py${{ matrix.pyver }}
