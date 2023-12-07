@@ -31,9 +31,7 @@ class IntListAction(argparse.Action):
                 try:
                     start, end = (int(x) for x in item.split("-", 1))
                 except (TypeError, ValueError):
-                    raise argparse.ArgumentError(
-                        self, "can't convert {!r} to list of ints".format(item)
-                    )
+                    raise argparse.ArgumentError(self, f"can't convert {item!r} to list of ints")
                 else:
                     int_list.extend(list(range(start, end + 1)))
 
@@ -46,7 +44,7 @@ class IntListAction(argparse.Action):
 class CLI(object):
     def _rm_tmpdir(self):
         def onerror(func, path, exc_info):
-            log_error("Couldn't remove '{}': {}".format(path, exc_info))
+            log_error("Couldn't remove '%s': %s", path, exc_info)
 
         shutil.rmtree(self._tmpdir, onerror=onerror)
 
@@ -54,7 +52,7 @@ class CLI(object):
     def tmpdir(self):
         if not hasattr(self, "_tmpdir"):
             self._tmpdir = tempfile.mkdtemp(prefix="rpmspectool_")
-            log_debug("Created temporary directory '{}'".format(self._tmpdir))
+            log_debug("Created temporary directory '%s'", self._tmpdir)
             if not self.args.debug:
                 atexit.register(self._rm_tmpdir)
         return self._tmpdir
@@ -131,12 +129,12 @@ class CLI(object):
         if args.debug:
             logging.basicConfig(level=logging.DEBUG)
 
-        log_debug("args: {}".format(args))
+        log_debug("args: %s", args)
 
         if not getattr(args, "cmd"):
             argparser.print_usage()
         elif args.cmd == "version":
-            print("{prog} {version}".format(prog=sys.argv[0], version=version))
+            print(f"{sys.argv[0]} {version}")
         else:
             parsed_spec_path = os.path.join(
                 self.tmpdir, "rpmspectool-" + os.path.basename(self.args.specfile.name)
@@ -148,12 +146,11 @@ class CLI(object):
             except RPMSpecEvalError as e:
                 specpath, returncode, stderr = e.args
                 if args.debug:
-                    errmsg = "Error parsing intermediate spec file '{specpath}'."
+                    print(f"Error parsing intermediate spec file '{specpath}'.", file=sys.stderr)
                 else:
-                    errmsg = "Error parsing intermediate spec file."
-                print(errmsg.format(specpath=specpath), file=sys.stderr)
+                    print("Error parsing intermediate spec file.", file=sys.stderr)
                 if args.verbose:
-                    print("RPM error:\n{stderr}".format(stderr=stderr), file=sys.stderr)
+                    print(f"RPM error:\n{stderr}", file=sys.stderr)
                 sys.exit(2)
 
             sources, patches = self.filter_sources_patches(
@@ -163,7 +160,7 @@ class CLI(object):
             if args.cmd == "list":
                 for prefix, what in (("Source", sources), ("Patch", patches)):
                     for i in sorted(what):
-                        print("{}{}: {}".format(prefix, i, what[i]))
+                        print(f"{prefix}{i}: {what[i]}")
             else:  # args.cmd == "get"
                 if getattr(args, "sourcedir"):
                     where = specfile_res["srcdir"]
