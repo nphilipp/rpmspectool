@@ -338,14 +338,12 @@ class TestCLI:
     ids=("without-keyboard-interrupt", "with-keyboard-interrupt"),
 )
 def test_main(with_keyboard_interrupt):
-    with mock.patch.object(cli, "i18n_init") as i18n_init, mock.patch.object(cli, "CLI") as CLI:
-        manager = mock.Mock()
-        manager.attach_mock(i18n_init, "i18n_init")
-        manager.attach_mock(CLI.return_value.main, "cli_main")
+    with mock.patch.object(cli, "CLI") as CLI:
+        main_method = CLI.return_value.main
         if with_keyboard_interrupt:
-            CLI.return_value.main.side_effect = KeyboardInterrupt()
+            main_method.side_effect = KeyboardInterrupt()
         else:
-            CLI.return_value.main.return_value = 0
+            main_method.return_value = 0
 
         retval = cli.main()
         if with_keyboard_interrupt:
@@ -353,6 +351,4 @@ def test_main(with_keyboard_interrupt):
         else:
             assert retval == 0
 
-        expected_calls = [mock.call.i18n_init(), mock.call.cli_main()]
-
-        assert manager.mock_calls == expected_calls
+        main_method.assert_called_once_with()
