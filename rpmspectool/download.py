@@ -10,7 +10,6 @@ from tempfile import NamedTemporaryFile
 
 import pycurl
 
-from .i18n import _
 from .version import version
 
 umask = os.umask(0)
@@ -59,7 +58,7 @@ def download(url, where=None, dry_run=False, insecure=False, force=False):
             ts = c.getinfo(c.INFO_FILETIME)
             http_status = c.getinfo(pycurl.HTTP_CODE)
             if not 200 <= http_status < 300:
-                raise DownloadError(_("Couldn't download {}: {}".format(url, http_status)))
+                raise DownloadError("Couldn't download {}: {}".format(url, http_status))
         finally:
             c.close()
 

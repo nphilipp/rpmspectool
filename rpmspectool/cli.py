@@ -17,8 +17,6 @@ from logging import error as log_error
 import argcomplete
 
 from .download import DownloadError, download, is_url
-from .i18n import _
-from .i18n import init as i18n_init
 from .rpm import RPMSpecEvalError, RPMSpecHandler
 from .version import version
 
@@ -62,10 +60,10 @@ class CLI(object):
         return self._tmpdir
 
     def get_arg_parser(self):
-        parser = argparse.ArgumentParser(description=_("Utility for RPM spec files"))
+        parser = argparse.ArgumentParser(description="Utility for RPM spec files")
         parser.add_argument("--debug", "-D", action="store_true")
 
-        commands = parser.add_subparsers(dest="cmd", help=_("Commands"))
+        commands = parser.add_subparsers(dest="cmd", help="Commands")
 
         action_parser = argparse.ArgumentParser(add_help=False)
         action_parser.add_argument("--verbose", "-v", action="store_true")
@@ -80,10 +78,10 @@ class CLI(object):
         patches_group.add_argument("--patch", "-p", action=IntListAction, type=str)
 
         action_parser.add_argument(
-            "specfile", type=argparse.FileType("rb"), help=_("The RPM spec file to read")
+            "specfile", type=argparse.FileType("rb"), help="The RPM spec file to read"
         )
 
-        get_cmd = commands.add_parser("get", parents=[action_parser], help=_("Download files"))
+        get_cmd = commands.add_parser("get", parents=[action_parser], help="Download files")
         get_cmd.add_argument("--insecure", action="store_true", default=False)
         get_cmd.add_argument("--force", "-f", action="store_true", default=False)
         get_cmd.add_argument("--dry-run", "--dryrun", "-n", action="store_true", default=False)
@@ -92,9 +90,9 @@ class CLI(object):
         get_src_group.add_argument("--directory", "-C", action="store")
         get_src_group.add_argument("--sourcedir", "-R", action="store_true")
 
-        commands.add_parser("list", parents=[action_parser], help=_("List files"))
+        commands.add_parser("list", parents=[action_parser], help="List files")
 
-        version_cmd = commands.add_parser("version", help=_("Show rpmspectool version"))
+        version_cmd = commands.add_parser("version", help="Show rpmspectool version")
         version_cmd.set_defaults(cmd="version")
 
         return parser
@@ -150,12 +148,12 @@ class CLI(object):
             except RPMSpecEvalError as e:
                 specpath, returncode, stderr = e.args
                 if args.debug:
-                    errmsg = _("Error parsing intermediate spec file '{specpath}'.")
+                    errmsg = "Error parsing intermediate spec file '{specpath}'."
                 else:
-                    errmsg = _("Error parsing intermediate spec file.")
+                    errmsg = "Error parsing intermediate spec file."
                 print(errmsg.format(specpath=specpath), file=sys.stderr)
                 if args.verbose:
-                    print(_("RPM error:\n{stderr}").format(stderr=stderr), file=sys.stderr)
+                    print("RPM error:\n{stderr}".format(stderr=stderr), file=sys.stderr)
                 sys.exit(2)
 
             sources, patches = self.filter_sources_patches(
@@ -201,7 +199,6 @@ class CLI(object):
 
 def main():
     try:
-        i18n_init()
         return CLI().main()
     except KeyboardInterrupt:
         return 1
