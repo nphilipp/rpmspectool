@@ -12,6 +12,9 @@ readme = "README.md"
 include = [
     { path = "COPYING", format = "sdist" },
     { path = "shell-completions/*/*", format = "sdist" },
+    { path = "tests/**/*.py", format = "sdist" },
+    { path = "tests/test-data/*.spec", format = "sdist" },
+    { path = "tests/test-data/*.expected", format = "sdist" },
 ]
 
 [tool.poetry.dependencies]
