@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "rpmspectool"
-version = "1.99.8"
+version = "1.99.9"
 description = "List and download sources and patches in RPM spec files"
 authors = ["Nils Philippsen <nils@tiptoe.de>"]
 license = "GPL-3.0-or-later"
