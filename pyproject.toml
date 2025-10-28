@@ -41,7 +41,9 @@ test = [
 addopts = "--cov-config=.coveragerc --cov=rpmspectool --cov-report=xml --cov-report=term --cov-report=html"
 
 [tool.ruff]
-select = ["E", "F", "W", "I"]
 line-length = 100
-target-version = "py37"
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
 allowed-confusables = ["’"]
