@@ -33,7 +33,7 @@ include = [
 [dependency-groups]
 test = [
     "coverage<8,>=7",
-    "pytest<8,>=6",
+    "pytest<9,>=6",
     "pytest-cov<6,>=4",
 ]
 
