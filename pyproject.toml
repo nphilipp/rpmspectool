@@ -1,37 +1,41 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "rpmspectool"
 version = "1.99.10"
 description = "List and download sources and patches in RPM spec files"
-authors = ["Nils Philippsen <nils@tiptoe.de>"]
 license = "GPL-3.0-or-later"
+authors = [{name = "Nils Philippsen", email = "nils@tiptoe.de"}]
 readme = "README.md"
-include = [
-    { path = "COPYING", format = "sdist" },
-    { path = "shell-completions/*/*", format = "sdist" },
-    { path = "tests/**/*.py", format = "sdist" },
-    { path = "tests/test-data/*.spec", format = "sdist" },
-    { path = "tests/test-data/*.expected", format = "sdist" },
+requires-python = "<4.0,>=3.11"
+dependencies = [
+    "argcomplete<4.0,>=1.11.1",
+    "pycurl<8.0,>=7.43.0.5",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-argcomplete = "^1.11.1 || ^2 || ^3.0.0"
-pycurl = "^7.43.0.5"
+[project.scripts]
+rpmspectool = "rpmspectool.cli:main"
 
-[tool.poetry.scripts]
-rpmspectool = " rpmspectool.cli:main"
+[tool.hatch.build.targets.wheel]
+packages = ["rpmspectool"]
 
-[tool.poetry.group.dev.dependencies]
-coverage = "^7"
-pytest = "^6 || ^7"
-pytest-cov = "^4 || ^5.0.0"
+[tool.hatch.build.targets.sdist]
+include = [
+    "COPYING",
+    "shell-completions/*/*",
+    "tests/**/*.py",
+    "tests/test-data/*.spec",
+    "tests/test-data/*.expected",
+]
 
-[tool.black]
-line_length = 100
+[dependency-groups]
+test = [
+    "coverage<8,>=7",
+    "pytest<8,>=6",
+    "pytest-cov<6,>=4",
+]
 
 [tool.pytest.ini_options]
 addopts = "--cov-config=.coveragerc --cov=rpmspectool --cov-report=xml --cov-report=term --cov-report=html"
