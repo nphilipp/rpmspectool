@@ -10,7 +10,8 @@ from unittest import mock
 
 import pytest
 
-from rpmspectool import cli, download as download_mod, version
+from rpmspectool import cli, version
+from rpmspectool import download as download_mod
 
 HERE = Path(__file__).parent
 TEST_SPEC_PATH = HERE / "test-data" / "test1.spec"
