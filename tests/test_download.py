@@ -92,13 +92,15 @@ def test_download(
 
     time_now = time.time()
 
-    with mock.patch.object(time, "time") as time_time, mock.patch.object(
-        os, "remove"
-    ) as os_remove, mock.patch.object(os, "link") as os_link, mock.patch.object(
-        os, "utime"
-    ) as os_utime, mock.patch.object(
-        os, "chmod"
-    ) as os_chmod, chdir_ctx, expect_download_error:
+    with (
+        mock.patch.object(time, "time") as time_time,
+        mock.patch.object(os, "remove") as os_remove,
+        mock.patch.object(os, "link") as os_link,
+        mock.patch.object(os, "utime") as os_utime,
+        mock.patch.object(os, "chmod") as os_chmod,
+        chdir_ctx,
+        expect_download_error,
+    ):
         time_time.return_value = time_now
         if force == "filenotfound":
             force = True

@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: run tests through tox
-        run: "tox -e black,ruff,absolufy-imports"
+        run: "tox -e format,lint,absolufy-imports"
 
   ci-testsuite:
     strategy:

@@ -248,11 +248,13 @@ class TestCLI:
 
         argparser = mock.Mock(wraps=cli_obj.get_arg_parser())
 
-        with mock.patch.object(cli_obj, "get_arg_parser") as get_arg_parser, mock.patch.object(
-            sys, "argv"
-        ), mock.patch.object(cli, "logging") as logging, mock.patch.object(
-            cli, "download"
-        ) as download, expected_exc_context as excinfo:
+        with (
+            mock.patch.object(cli_obj, "get_arg_parser") as get_arg_parser,
+            mock.patch.object(sys, "argv"),
+            mock.patch.object(cli, "logging") as logging,
+            mock.patch.object(cli, "download") as download,
+            expected_exc_context as excinfo,
+        ):
             get_arg_parser.return_value = argparser
             if "download-error" in testcase:
                 download.side_effect = download_mod.DownloadError("This didn’t work.")
