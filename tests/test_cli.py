@@ -315,10 +315,6 @@ class TestCLI:
                 else:
                     expected_patch_calls.append(expected_call)
 
-            if "download-error" in testcase or "file-exists-error" in testcase:
-                expected_source_calls = expected_source_calls[0:]
-                expected_patch_calls = []
-
             assert download.call_args_list == expected_source_calls + expected_patch_calls
 
             if "error" in testcase:
