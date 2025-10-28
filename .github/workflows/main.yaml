@@ -14,6 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install basic RPM dependencies
+        run: dnf -y install libcurl-devel
+
       - name: run tests through tox
         run: "tox -e format,lint,absolufy-imports"
 
