@@ -126,6 +126,8 @@ class CLI(object):
         argcomplete.autocomplete(argparser)
         args = self.args = argparser.parse_args(sys.argv[1:])
 
+        retval = 0
+
         if args.debug:
             logging.basicConfig(level=logging.DEBUG)
 
@@ -180,7 +182,7 @@ class CLI(object):
                                 )
                             except DownloadError as e:
                                 log_error(e.args[0])
-                                return 1
+                                retval = 1
                             except FileExistsError as e:
                                 log_error(
                                     e.args[1] + f": {e.filename}"
@@ -189,9 +191,9 @@ class CLI(object):
                                     if e.filename2
                                     else ""
                                 )
-                                return 1
+                                retval = 1
 
-        return 0
+        return retval
 
 
 def main():
