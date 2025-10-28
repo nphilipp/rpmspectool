@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pyver: [311, 312]
+        pyver: [311, 312, 313, 314]
     runs-on: ubuntu-latest
     container: fedorapython/fedora-python-tox:latest
     steps:
