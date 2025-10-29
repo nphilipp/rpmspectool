@@ -75,9 +75,7 @@ class CLI(object):
         patches_group.add_argument("--patches", "-P", action="store_true")
         patches_group.add_argument("--patch", "-p", action=IntListAction, type=str)
 
-        action_parser.add_argument(
-            "specfile", type=argparse.FileType("rb"), help="The RPM spec file to read"
-        )
+        action_parser.add_argument("specfile", help="The RPM spec file to read")
 
         get_cmd = commands.add_parser("get", parents=[action_parser], help="Download files")
         get_cmd.add_argument("--insecure", action="store_true", default=False)
@@ -139,21 +137,30 @@ class CLI(object):
             print(f"{sys.argv[0]} {version}")
         else:
             parsed_spec_path = os.path.join(
-                self.tmpdir, "rpmspectool-" + os.path.basename(self.args.specfile.name)
+                self.tmpdir, "rpmspectool-" + os.path.basename(self.args.specfile)
             )
-            spechandler = RPMSpecHandler(self.tmpdir, args.specfile, parsed_spec_path)
-
             try:
-                specfile_res = spechandler.eval_specfile(self.args.define)
-            except RPMSpecEvalError as e:
-                specpath, returncode, stderr = e.args
-                if args.debug:
-                    print(f"Error parsing intermediate spec file '{specpath}'.", file=sys.stderr)
-                else:
-                    print("Error parsing intermediate spec file.", file=sys.stderr)
-                if args.verbose:
-                    print(f"RPM error:\n{stderr}", file=sys.stderr)
-                sys.exit(2)
+                ctxmgr = open(self.args.specfile, "rb")
+            except OSError as exc:
+                print(f"Can’t open {self.args.specfile}: {exc}", file=sys.stderr)
+                sys.exit(1)
+
+            with ctxmgr as specfile:
+                spechandler = RPMSpecHandler(self.tmpdir, specfile, parsed_spec_path)
+
+                try:
+                    specfile_res = spechandler.eval_specfile(self.args.define)
+                except RPMSpecEvalError as e:
+                    specpath, returncode, stderr = e.args
+                    if args.debug:
+                        print(
+                            f"Error parsing intermediate spec file '{specpath}'.", file=sys.stderr
+                        )
+                    else:
+                        print("Error parsing intermediate spec file.", file=sys.stderr)
+                    if args.verbose:
+                        print(f"RPM error:\n{stderr}", file=sys.stderr)
+                    sys.exit(2)
 
             sources, patches = self.filter_sources_patches(
                 args, specfile_res["sources"], specfile_res["patches"]

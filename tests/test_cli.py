@@ -6,6 +6,7 @@ from contextlib import nullcontext
 from errno import EEXIST
 from io import IOBase
 from pathlib import Path
+from typing import assert_never
 from unittest import mock
 
 import pytest
@@ -197,6 +198,7 @@ class TestCLI:
             "list-debug",
             "list-eval-error",
             "list-eval-error-debug-verbose",
+            "list-file-missing-error",
             "get",
             "get-debug",
             "get-sourcedir",
@@ -242,6 +244,10 @@ class TestCLI:
             if "eval-error" in testcase:
                 subcmd_args.append("/dev/null")
                 expected_exc_context = pytest.raises(SystemExit)
+            elif "file-missing-error" in testcase:
+                expected_exc_context = pytest.raises(SystemExit)
+                missing_spec = tmp_path / "missing.spec"
+                subcmd_args.append(str(missing_spec))
             else:
                 subcmd_args.append(TEST_SPEC)
 
@@ -286,10 +292,16 @@ class TestCLI:
             if "error" not in testcase:
                 assert stdout == expected
             else:
-                assert excinfo.value.code == 2
-                assert "Error parsing intermediate spec file" in stderr
-                if "verbose" in testcase:
-                    assert "RPM error:" in stderr
+                if "eval-error" in testcase:
+                    assert excinfo.value.code == 2
+                    assert "Error parsing intermediate spec file" in stderr
+                    if "verbose" in testcase:
+                        assert "RPM error:" in stderr
+                elif "file-missing" in testcase:
+                    assert excinfo.value.code == 1
+                    assert f"Can’t open {missing_spec}:" in stderr
+                else:
+                    assert_never(testcase)
         elif "get" in testcase:
             expected_source_calls = []
             expected_patch_calls = []
