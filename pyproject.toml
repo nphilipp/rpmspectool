@@ -24,7 +24,8 @@ packages = ["rpmspectool"]
 [tool.hatch.build.targets.sdist]
 include = [
     "COPYING",
-    "shell-completions/*/*",
+    "rpmspectool/**/*.py",
+    "shell-completions/**/*",
     "tests/**/*.py",
     "tests/test-data/*.spec",
     "tests/test-data/*.expected",
