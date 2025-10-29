@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "rpmspectool"
-version = "1.99.10"
+version = "1.100.0"
 description = "List and download sources and patches in RPM spec files"
 license = "GPL-3.0-or-later"
 authors = [{name = "Nils Philippsen", email = "nils@tiptoe.de"}]

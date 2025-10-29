@@ -218,7 +218,7 @@ wheels = [
 
 [[package]]
 name = "rpmspectool"
-version = "1.99.10"
+version = "1.100.0"
 source = { editable = "." }
 dependencies = [
     { name = "argcomplete" },
