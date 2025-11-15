@@ -34,7 +34,7 @@ include = [
 [dependency-groups]
 test = [
     "coverage<8,>=7",
-    "pytest<9,>=6",
+    "pytest<10,>=6",
     "pytest-cov<8,>=4",
 ]
 
